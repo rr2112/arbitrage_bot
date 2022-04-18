@@ -201,54 +201,56 @@ try:
                 buy_price = trading_coin['inrsell'] * price_correction_rate
                 quantity = round(min_usdt_balance * usdt_price / buy_price, 3)
             price = get_price_for_required_quantity('buy', buy_coin_pair, quantity)
-            # if -0.002 < ((price - buy_price) / buy_price) < 0.002:
-            print('*buy order placed, pair, quantiy, price *', buy_coin_pair, quantity, price)
-            buy_order_id = private_api_exc.create_limit_buy_order(buy_coin_pair, quantity, price)['info']['id']
-            final_buy_price = price * quantity
-            print('buy order id', buy_order_id)
-            private_api_requests += 1
-            # funds_quantity = private_api_exc.fetch_free_balance()[trading_coin['coin'].upper()]
-            # private_api_requests += 1
-            # retries = 0
-            # while funds_quantity < quantity or retries >= 10:
-            #     print("sleeping", 1)
-            #     time.sleep(1)
-            #     funds_quantity = private_api_exc.fetch_free_balance()[trading_coin['coin'].upper()]
-            #     private_api_requests += 1
-            #     retries += 1
-            # print("* buy order executed *")
-            # if retries >= 5:
-            #     private_api_exc.cancel_order(buy_order_id, buy_coin_pair)
-            #     private_api_requests += 1
-            time.sleep(0.2)
-            sell_quantity = quantity
-            final_sell_pair = trading_coin['final_sell_pair']
-            if final_sell_pair == 'usdt':
-                sell_price = trading_coin['usdtbuy'] * 0.998
+            if -0.003 < ((price - buy_price) / buy_price) < 0.003:
+                print('*buy order placed, pair, quantiy, price *', buy_coin_pair, quantity, price)
+                buy_order_id = private_api_exc.create_limit_buy_order(buy_coin_pair, quantity, price)['info']['id']
+                final_buy_price = price * quantity
+                print('buy order id', buy_order_id)
+                private_api_requests += 1
+                # funds_quantity = private_api_exc.fetch_free_balance()[trading_coin['coin'].upper()]
+                # private_api_requests += 1
+                # retries = 0
+                # while funds_quantity < quantity or retries >= 10:
+                #     print("sleeping", 1)
+                #     time.sleep(1)
+                #     funds_quantity = private_api_exc.fetch_free_balance()[trading_coin['coin'].upper()]
+                #     private_api_requests += 1
+                #     retries += 1
+                # print("* buy order executed *")
+                # if retries >= 5:
+                #     private_api_exc.cancel_order(buy_order_id, buy_coin_pair)
+                #     private_api_requests += 1
+                time.sleep(0.2)
+                sell_quantity = quantity
+                final_sell_pair = trading_coin['final_sell_pair']
+                if final_sell_pair == 'usdt':
+                    sell_price = trading_coin['usdtbuy'] * 0.998
+                else:
+                    sell_price = trading_coin['inrbuy']
+                sell_coin_pair = trading_coin['coin'] + trading_coin['final_sell_pair']
+                # s_price = get_price_for_required_quantity('sell', sell_coin_pair, sell_quantity)
+                # if -0.001 < (s_price - sell_price) / sell_price > 0.001:
+                print("sell order placed,sell_coin_pair, sell_quantity, s_price: ", sell_coin_pair, sell_quantity, s_price)
+                private_api_exc.create_limit_sell_order(sell_coin_pair, sell_quantity, sell_price)
+                final_sell_price = sell_quantity * s_price
+                private_api_requests += 1
+                print("usdt_price", usdt_price)
+                # final_balance = private_api_exc.fetch_free_balance()
+                # private_api_requests += 1
+                # print('primary_balance: INR: ', primary_balance['INR'], 'usdt: ', primary_balance['USDT'])
+                # print('final_balance: INR: ', final_balance['INR'], 'usdt: ', final_balance['USDT'])
+                # else:
+                #     print("price fluctuated after buying,returning bought coins at available best price")
+                #     private_api_exc.create_limit_sell_order(sell_coin_pair, sell_quantity, s_price)
+                #     private_api_requests += 1
+                # else:
+                #     print("price fluctuates >0.1%,wont trade", price, buy_price)
+                # get_balance_diff_after_trade()
+                print("final_buy_pair,final_buy_price, final_sell_pair, final_sell_price, usdt_price", final_buy_pair,
+                    final_buy_price, final_sell_pair, final_sell_price, usdt_price)
+                get_ideal_profit(final_buy_pair, final_buy_price, final_sell_pair, final_sell_price, usdt_price)
             else:
-                sell_price = trading_coin['inrbuy']
-            sell_coin_pair = trading_coin['coin'] + trading_coin['final_sell_pair']
-            s_price = get_price_for_required_quantity('sell', sell_coin_pair, sell_quantity)
-            # if -0.001 < (s_price - sell_price) / sell_price > 0.001:
-            print("sell order placed,sell_coin_pair, sell_quantity, s_price: ", sell_coin_pair, sell_quantity, s_price)
-            private_api_exc.create_limit_sell_order(sell_coin_pair, sell_quantity, s_price)
-            final_sell_price = sell_quantity * s_price
-            private_api_requests += 1
-            print("usdt_price", usdt_price)
-            # final_balance = private_api_exc.fetch_free_balance()
-            # private_api_requests += 1
-            # print('primary_balance: INR: ', primary_balance['INR'], 'usdt: ', primary_balance['USDT'])
-            # print('final_balance: INR: ', final_balance['INR'], 'usdt: ', final_balance['USDT'])
-            # else:
-            #     print("price fluctuated after buying,returning bought coins at available best price")
-            #     private_api_exc.create_limit_sell_order(sell_coin_pair, sell_quantity, s_price)
-            #     private_api_requests += 1
-            # else:
-            #     print("price fluctuates >0.1%,wont trade", price, buy_price)
-            # get_balance_diff_after_trade()
-            print("final_buy_pair,final_buy_price, final_sell_pair, final_sell_price, usdt_price", final_buy_pair,
-                  final_buy_price, final_sell_pair, final_sell_price, usdt_price)
-            get_ideal_profit(final_buy_pair, final_buy_price, final_sell_pair, final_sell_price, usdt_price)
+                print(f"price fluctuation is high, changed price {price}, original price {buy_price}")
         else:
             print("no coins with given profit percentage")
 
@@ -259,3 +261,6 @@ except Exception as e:
 # get_balance_diff_after_trade()
 
 print("**done**")
+
+
+#Task-1: remove sorting and trigger buy, sell at the first coin in loop within profit range
